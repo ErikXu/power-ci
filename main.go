@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	cmd := exec.Command("yum", "update", "-y")
-	f, err := pty.Start(cmd)
+    cmd := exec.Command("yum", "update", "-y")
+    f, err := pty.Start(cmd)
     if err != nil {
         panic(err)
     }
