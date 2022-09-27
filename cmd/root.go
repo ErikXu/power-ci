@@ -17,9 +17,9 @@ func init() {
 
 var rootCmd = &cobra.Command{
 	Use:   "power-ci",
-	Short: "power-ci is a helpful tool to deal with devops",
+	Short: "power-ci is a powerful tools for devops",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("power-ci is a helpful tool to deal with devops")
+		fmt.Println("power-ci is a powerful tools for devops")
 
 		homeDir, _ := os.UserHomeDir()
 		workspace := path.Join(homeDir, consts.Workspace)

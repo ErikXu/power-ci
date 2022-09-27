@@ -1,3 +1,3 @@
 # power-ci
 
-Power tools for devops.
+Powerful tools for devops.
