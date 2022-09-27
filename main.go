@@ -1,26 +1,18 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
+	"io"
+	"os"
 	"os/exec"
+	"github.com/creack/pty"
 )
 
 func main() {
 	cmd := exec.Command("yum", "update", "-y")
-	cmdReader, _ := cmd.StdoutPipe()
-	scanner := bufio.NewScanner(cmdReader)
-	done := make(chan bool)
-	go func() {
-		for scanner.Scan() {
-			fmt.Println(scanner.Text())
-		}
-		done <- true
-	}()
-	cmd.Start()
-	<-done
-	err := cmd.Wait()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
+	f, err := pty.Start(cmd)
+    if err != nil {
+        panic(err)
+    }
+    io.Copy(os.Stdout, f)
 }
+
