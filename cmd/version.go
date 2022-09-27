@@ -6,12 +6,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	rootCmd.AddCommand(versionCmd)
-}
-
 var versionCmd = &cobra.Command{
-	Use: "version",
+	Use:   "version",
+	Short: "Get version of power-ci",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("0.1.0")
 	},
