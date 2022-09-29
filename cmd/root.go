@@ -6,6 +6,7 @@ import (
 	"path"
 	"power-ci/cmd/docker"
 	"power-ci/cmd/gitlab"
+	"power-ci/cmd/golang"
 	"power-ci/consts"
 
 	"github.com/spf13/cobra"
@@ -15,6 +16,7 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(docker.DockerCmd)
 	rootCmd.AddCommand(gitlab.GitlabCmd)
+	rootCmd.AddCommand(golang.GolangCmd)
 }
 
 var rootCmd = &cobra.Command{
