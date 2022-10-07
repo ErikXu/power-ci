@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -50,8 +51,11 @@ var dockerInstallCmd = &cobra.Command{
 		command := exec.Command("bash", filepath)
 		f, err := pty.Start(command)
 		if err != nil {
-			panic(err)
+			fmt.Print("Install failed")
+			return
 		}
 		io.Copy(os.Stdout, f)
+
+		fmt.Print("Install success, more info please refer https://docs.docker.com/engine/install/centos/")
 	},
 }

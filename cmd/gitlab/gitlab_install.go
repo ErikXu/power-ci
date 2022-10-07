@@ -1,6 +1,7 @@
 package gitlab
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -28,9 +29,7 @@ systemctl start postfix
 
 curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | bash
 
-EXTERNAL_URL="{EXTERNAL_URL}" yum install gitlab-ce -y
-
-gitlab-ctl reconfigure`
+EXTERNAL_URL="{EXTERNAL_URL}" yum install gitlab-ce -y`
 
 var gitlabInstallCmd = &cobra.Command{
 	Use:   "install",
@@ -49,8 +48,11 @@ var gitlabInstallCmd = &cobra.Command{
 		command := exec.Command("bash", filepath)
 		f, err := pty.Start(command)
 		if err != nil {
-			panic(err)
+			fmt.Print("Install failed")
+			return
 		}
 		io.Copy(os.Stdout, f)
+
+		fmt.Print("Install success, more info please refer https://about.gitlab.com/install/#centos-7")
 	},
 }
