@@ -48,11 +48,11 @@ var gitlabInstallCmd = &cobra.Command{
 		command := exec.Command("bash", filepath)
 		f, err := pty.Start(command)
 		if err != nil {
-			fmt.Print("Install failed")
+			fmt.Println("Install failed")
 			return
 		}
 		io.Copy(os.Stdout, f)
 
-		fmt.Print("Install success, more info please refer https://about.gitlab.com/install/#centos-7")
+		fmt.Println("Install success, more info please refer https://about.gitlab.com/install/#centos-7")
 	},
 }

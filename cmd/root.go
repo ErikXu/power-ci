@@ -8,6 +8,7 @@ import (
 	"power-ci/cmd/docker"
 	"power-ci/cmd/gitlab"
 	"power-ci/cmd/golang"
+	"power-ci/cmd/jenkins"
 	"power-ci/consts"
 
 	"github.com/spf13/cobra"
@@ -19,6 +20,7 @@ func init() {
 	rootCmd.AddCommand(gitlab.GitlabCmd)
 	rootCmd.AddCommand(golang.GolangCmd)
 	rootCmd.AddCommand(code_server.CodeServerCmd)
+	rootCmd.AddCommand(jenkins.JenkinsCmd)
 }
 
 var rootCmd = &cobra.Command{
