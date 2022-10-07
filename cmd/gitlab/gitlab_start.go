@@ -9,8 +9,8 @@ import (
 )
 
 var gitlabStartCmd = &cobra.Command{
-	Use:   "install",
-	Short: "Install gitlab",
+	Use:   "start",
+	Short: "Start gitlab",
 	Run: func(cmd *cobra.Command, args []string) {
 		command := exec.Command("gitlab-ctl", "reconfigure")
 		cmdReader, _ := command.StdoutPipe()
