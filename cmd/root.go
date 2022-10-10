@@ -8,6 +8,7 @@ import (
 	"power-ci/cmd/docker"
 	"power-ci/cmd/gitlab"
 	"power-ci/cmd/golang"
+	"power-ci/cmd/istio"
 	"power-ci/cmd/jenkins"
 	"power-ci/cmd/kubernetes"
 	"power-ci/consts"
@@ -23,6 +24,7 @@ func init() {
 	rootCmd.AddCommand(code_server.CodeServerCmd)
 	rootCmd.AddCommand(jenkins.JenkinsCmd)
 	rootCmd.AddCommand(kubernetes.KubernetesCmd)
+	rootCmd.AddCommand(istio.IstioCmd)
 }
 
 var rootCmd = &cobra.Command{
