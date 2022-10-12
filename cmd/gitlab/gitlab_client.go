@@ -3,6 +3,7 @@ package gitlab
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"power-ci/models/gitlab"
 	"strings"
@@ -31,8 +32,9 @@ func call[Request gitlab.GitlabRequest, Response gitlab.GitlabResponse](client *
 
 	defer res.Body.Close()
 
+	body, _ := io.ReadAll(res.Body)
 	response := Response{}
-	json.NewDecoder(res.Body).Decode(response)
+	json.Unmarshal(body, &response)
 
 	return response
 }

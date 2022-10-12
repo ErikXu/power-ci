@@ -32,7 +32,11 @@ var gitlabInitCmd = &cobra.Command{
 			Client: *client,
 		}
 
-		request := &gitlab.OauthRequest{}
+		request := &gitlab.OauthRequest{
+			GrantType: "password",
+			Username:  User,
+			Password:  Password,
+		}
 
 		response := gitlabClient.GrantOauthToken("POST", Host, *request)
 
