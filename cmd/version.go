@@ -10,6 +10,6 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Get version of power-ci",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("0.1.0")
+		fmt.Println("0.1.1")
 	},
 }
