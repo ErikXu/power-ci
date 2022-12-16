@@ -66,6 +66,32 @@ service docker enable
 
 docker info`
 
+var script_fedora = `#!/bin/bash
+dnf remove -y docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-selinux \
+                  docker-engine-selinux \
+                  docker-engine
+
+dnf install -y dnf-plugins-core
+
+dnf config-manager \
+    --add-repo \
+    https://download.docker.com/linux/fedora/docker-ce.repo
+
+dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+systemctl start docker
+
+systemctl enable docker
+
+docker info`
+
 var dockerInstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install docker",
@@ -101,6 +127,8 @@ var dockerInstallCmd = &cobra.Command{
 			f.WriteString(script_centos)
 		case osVersion == "debian":
 			f.WriteString(script_debian)
+		case osVersion == "fedora":
+			f.WriteString(script_fedora)
 		default:
 			fmt.Printf("Unsupported OS version: %s\n", osVersion)
 			return
