@@ -122,12 +122,12 @@ var dockerInstallCmd = &cobra.Command{
 		filepath := path.Join(homeDir, consts.Workspace, "install-docker.sh")
 		f, _ := os.Create(filepath)
 
-		switch {
-		case osVersion == "centos":
+		switch osVersion {
+		case "centos", "rocky":
 			f.WriteString(script_centos)
-		case osVersion == "debian":
+		case "debian":
 			f.WriteString(script_debian)
-		case osVersion == "fedora":
+		case "fedora":
 			f.WriteString(script_fedora)
 		default:
 			fmt.Printf("Unsupported OS version: %s\n", osVersion)
