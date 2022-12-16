@@ -8,8 +8,22 @@
 
 ## Supported OS
 
-- CentOS
+### CentOS
 
-- Debian
+- CentOS 8
 
-- Fedora
+- CentOS 7
+
+### Debian
+
+- Debian 11
+
+- Debian 10
+
+### Fedora
+
+- Fedora 36
+
+### Rocky
+
+- Rocky 8
