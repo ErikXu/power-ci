@@ -1,18 +1,20 @@
 package docker
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"path"
 	"power-ci/consts"
+	"strings"
 
 	"github.com/creack/pty"
 	"github.com/spf13/cobra"
 )
 
-var script = `#!/bin/bash
+var script_centos = `#!/bin/bash
 yum remove docker \
                   docker-client \
                   docker-client-latest \
@@ -36,20 +38,78 @@ systemctl enable docker
 
 docker info`
 
+var script_debian = `#!/bin/bash
+apt-get remove -y docker docker-engine docker.io containerd runc
+
+apt-get update -y
+
+apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+
+mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --yes --dearmor -o /etc/apt/keyrings/docker.gpg
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+apt-get update -y
+
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+service docker start
+
+service docker enable
+
+docker info`
+
 var dockerInstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install docker",
 	Run: func(cmd *cobra.Command, args []string) {
+		file, err := os.Open("/etc/os-release")
+		if err != nil {
+			fmt.Println("Cannot get OS version")
+			return
+		}
+		defer file.Close()
+
+		scanner := bufio.NewScanner(file)
+
+		osVersion := "Unknown"
+
+		for scanner.Scan() {
+			line := scanner.Text()
+			if strings.HasPrefix(line, "ID=") {
+				temp := strings.Replace(line, "ID=", "", -1)
+				osVersion = strings.Replace(temp, "\"", "", -1)
+				break
+			}
+		}
+
 		homeDir, _ := os.UserHomeDir()
 		os.MkdirAll(path.Join(homeDir, consts.Workspace), os.ModePerm)
 
 		filepath := path.Join(homeDir, consts.Workspace, "install-docker.sh")
 		f, _ := os.Create(filepath)
 
-		f.WriteString(script)
+		switch {
+		case osVersion == "centos":
+			f.WriteString(script_centos)
+		case osVersion == "debian":
+			f.WriteString(script_debian)
+		default:
+			fmt.Printf("Unsupported OS version: %s\n", osVersion)
+			return
+		}
+
+		fmt.Printf("OS version: %s\n", osVersion)
 
 		command := exec.Command("bash", filepath)
-		f, err := pty.Start(command)
+		f, err = pty.Start(command)
 		if err != nil {
 			fmt.Println("Install failed")
 			return
