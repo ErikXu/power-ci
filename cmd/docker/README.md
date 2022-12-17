@@ -27,3 +27,7 @@
 ### Rocky
 
 - Rocky 8
+
+### openSUSE
+
+- openSUSE Leap 15
