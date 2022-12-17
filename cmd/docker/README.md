@@ -2,7 +2,7 @@
 
 ## Usage
 
-- Install istio
+- Install docker
 
   `./power-ci docker install`
 
