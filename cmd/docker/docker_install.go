@@ -92,6 +92,19 @@ systemctl enable docker
 
 docker info`
 
+var script_opensuse_leap = `#!/bin/bash
+zypper refresh
+
+zypper update -y
+
+zypper install -y docker
+
+systemctl start docker
+
+systemctl enable docker
+
+docker info`
+
 var dockerInstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install docker",
@@ -129,6 +142,8 @@ var dockerInstallCmd = &cobra.Command{
 			f.WriteString(script_debian)
 		case "fedora":
 			f.WriteString(script_fedora)
+		case "opensuse-leap":
+			f.WriteString(script_opensuse_leap)
 		default:
 			fmt.Printf("Unsupported OS version: %s\n", osVersion)
 			return
