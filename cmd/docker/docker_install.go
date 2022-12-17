@@ -105,6 +105,32 @@ systemctl enable docker
 
 docker info`
 
+var script_ubuntu = `#!/bin/bash
+apt-get update -y
+
+apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+
+mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --yes --dearmor -o /etc/apt/keyrings/docker.gpg
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+apt-get update -y
+
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+service docker start
+
+service docker enable
+
+docker info`
+
 var dockerInstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install docker",
@@ -144,6 +170,8 @@ var dockerInstallCmd = &cobra.Command{
 			f.WriteString(script_fedora)
 		case "opensuse-leap":
 			f.WriteString(script_opensuse_leap)
+		case "ubuntu":
+			f.WriteString(script_ubuntu)
 		default:
 			fmt.Printf("Unsupported OS version: %s\n", osVersion)
 			return
@@ -159,6 +187,6 @@ var dockerInstallCmd = &cobra.Command{
 		}
 		io.Copy(os.Stdout, f)
 
-		fmt.Println("Install success, more info please refer https://docs.docker.com/engine/install/centos/")
+		fmt.Println("Install success, more info please refer https://docs.docker.com/engine/install/")
 	},
 }
