@@ -15,9 +15,9 @@ type GitlabClient struct {
 	AccessToken string
 }
 
-func (client *GitlabClient) GrantOauthToken(username string, password string) gitlab.OauthResponse {
+func (client *GitlabClient) GrantOauthToken(grantType string, username string, password string) gitlab.OauthResponse {
 	request := &gitlab.OauthRequest{
-		GrantType: "password",
+		GrantType: grantType,
 		Username:  username,
 		Password:  password,
 	}
@@ -64,6 +64,34 @@ func (client *GitlabClient) CreateUser(admin bool, username string, name string,
 
 	body, _ := io.ReadAll(res.Body)
 	response := gitlab.CreateUserResponse{}
+	json.Unmarshal(body, &response)
+	return response
+}
+
+func (client *GitlabClient) CreatePersonalAccessToken(userId int, name string, scopes []string, expiresAt string) gitlab.CreatePersonalAccessTokenResponse {
+	url := fmt.Sprintf("%s/api/v4/users/%d/personal_access_tokens", client.Host, userId)
+
+	request := &gitlab.CreatePersonalAccessTokenRequest{
+		Name:      name,
+		Scopes:    scopes,
+		ExpiresAt: expiresAt,
+	}
+
+	jsonValue, _ := json.Marshal(request)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
+
+	req.Header.Add("Content-Type", "application/json;charset=utf-8")
+	req.Header.Add("Authorization", "Bearer "+client.AccessToken)
+
+	res, err := client.Client.Do(req)
+	if err != nil {
+		panic("Call rest api failed")
+	}
+
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+	response := gitlab.CreatePersonalAccessTokenResponse{}
 	json.Unmarshal(body, &response)
 	return response
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +34,7 @@ var gitlabInitCmd = &cobra.Command{
 			Host:   strings.TrimRight(Host, "/"),
 		}
 
-		response := gitlabClient.GrantOauthToken(User, Password)
+		response := gitlabClient.GrantOauthToken("password", User, Password)
 		gitlabClient.AccessToken = response.AccessToken
 
 		devopsUserId := 0
@@ -41,10 +42,14 @@ var gitlabInitCmd = &cobra.Command{
 		if len(users) >= 1 {
 			devopsUserId = users[0].Id
 		} else {
-			devopsUser := gitlabClient.CreateUser(true, "devops_user", "Devops_User", "devops@example.com", "12345678")
+			password := uuid.New()
+			devopsUser := gitlabClient.CreateUser(true, "devops_user", "Devops_User", "devops@example.com", password.String())
 			devopsUserId = devopsUser.Id
 		}
 
 		fmt.Println(devopsUserId)
+
+		var privateToken = gitlabClient.CreatePersonalAccessToken(devopsUserId, "devops_token", []string{"api"}, "2099-12-31")
+		fmt.Println(privateToken)
 	},
 }
