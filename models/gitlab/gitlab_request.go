@@ -1,5 +1,5 @@
 package gitlab
 
 type GitlabRequest interface {
-	EmptyRequest | OauthRequest
+	EmptyRequest | OauthRequest | CreateUserRequest | CreatePersonalAccessTokenRequest
 }

@@ -15,14 +15,14 @@ type GitlabClient struct {
 	AccessToken string
 }
 
-func (client *GitlabClient) GrantOauthToken(grantType string, username string, password string) gitlab.OauthResponse {
+func (client *GitlabClient) GrantOauthToken(grantType string, username string, password string) *gitlab.OauthResponse {
 	request := &gitlab.OauthRequest{
 		GrantType: grantType,
 		Username:  username,
 		Password:  password,
 	}
 
-	return call(client, "POST", client.Host, "/oauth/token", *request)
+	return call[gitlab.OauthRequest, gitlab.OauthResponse](client, "POST", "/oauth/token", *request)
 }
 
 func (client *GitlabClient) GetUserByUsername(username string) []gitlab.GetUserResponse {
@@ -38,9 +38,7 @@ func (client *GitlabClient) GetUserByUsername(username string) []gitlab.GetUserR
 	return response
 }
 
-func (client *GitlabClient) CreateUser(admin bool, username string, name string, email string, password string) gitlab.CreateUserResponse {
-	url := fmt.Sprintf("%s/api/v4/users", client.Host)
-
+func (client *GitlabClient) CreateUser(admin bool, username string, name string, email string, password string) *gitlab.CreateUserResponse {
 	request := &gitlab.CreateUserRequest{
 		Admin:    admin,
 		Username: username,
@@ -49,60 +47,31 @@ func (client *GitlabClient) CreateUser(admin bool, username string, name string,
 		Password: password,
 	}
 
-	jsonValue, _ := json.Marshal(request)
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
-
-	req.Header.Add("Content-Type", "application/json;charset=utf-8")
-	req.Header.Add("Authorization", "Bearer "+client.AccessToken)
-
-	res, err := client.Client.Do(req)
-	if err != nil {
-		panic("Call rest api failed")
-	}
-
-	defer res.Body.Close()
-
-	body, _ := io.ReadAll(res.Body)
-	response := gitlab.CreateUserResponse{}
-	json.Unmarshal(body, &response)
-	return response
+	return call[gitlab.CreateUserRequest, gitlab.CreateUserResponse](client, "POST", "/api/v4/users", *request)
 }
 
-func (client *GitlabClient) CreatePersonalAccessToken(userId int, name string, scopes []string, expiresAt string) gitlab.CreatePersonalAccessTokenResponse {
-	url := fmt.Sprintf("%s/api/v4/users/%d/personal_access_tokens", client.Host, userId)
-
+func (client *GitlabClient) CreatePersonalAccessToken(userId int, name string, scopes []string, expiresAt string) *gitlab.CreatePersonalAccessTokenResponse {
 	request := &gitlab.CreatePersonalAccessTokenRequest{
 		Name:      name,
 		Scopes:    scopes,
 		ExpiresAt: expiresAt,
 	}
 
-	jsonValue, _ := json.Marshal(request)
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
-
-	req.Header.Add("Content-Type", "application/json;charset=utf-8")
-	req.Header.Add("Authorization", "Bearer "+client.AccessToken)
-
-	res, err := client.Client.Do(req)
-	if err != nil {
-		panic("Call rest api failed")
-	}
-
-	defer res.Body.Close()
-
-	body, _ := io.ReadAll(res.Body)
-	response := gitlab.CreatePersonalAccessTokenResponse{}
-	json.Unmarshal(body, &response)
-	return response
+	return call[gitlab.CreatePersonalAccessTokenRequest, gitlab.CreatePersonalAccessTokenResponse](client, "POST", fmt.Sprintf("/api/v4/users/%d/personal_access_tokens", userId), *request)
 }
 
-func call[Request gitlab.GitlabRequest, Response gitlab.GitlabResponse](client *GitlabClient, method string, host string, api string, request Request) Response {
-	url := host + api
+func callToBytes[Request gitlab.GitlabRequest](client *GitlabClient, method string, api string, request Request) []byte {
+	url := client.Host + api
 
 	jsonValue, _ := json.Marshal(request)
 	req, _ := http.NewRequest(method, url, bytes.NewBuffer(jsonValue))
 
 	req.Header.Add("Content-Type", "application/json;charset=utf-8")
+
+	if client.AccessToken != "" {
+		req.Header.Add("Authorization", "Bearer "+client.AccessToken)
+	}
+
 	res, err := client.Client.Do(req)
 	if err != nil {
 		panic("Call rest api failed")
@@ -111,8 +80,13 @@ func call[Request gitlab.GitlabRequest, Response gitlab.GitlabResponse](client *
 	defer res.Body.Close()
 
 	body, _ := io.ReadAll(res.Body)
-	response := Response{}
-	json.Unmarshal(body, &response)
 
+	return body
+}
+
+func call[Request gitlab.GitlabRequest, Response gitlab.GitlabResponse](client *GitlabClient, method string, api string, request Request) *Response {
+	body := callToBytes(client, method, api, request)
+	response := new(Response)
+	json.Unmarshal(body, &response)
 	return response
 }

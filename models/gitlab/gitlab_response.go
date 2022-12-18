@@ -1,5 +1,5 @@
 package gitlab
 
 type GitlabResponse interface {
-	OauthResponse
+	OauthResponse | CreateUserResponse | CreatePersonalAccessTokenResponse
 }
