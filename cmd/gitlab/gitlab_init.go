@@ -3,7 +3,7 @@ package gitlab
 import (
 	"fmt"
 	"net/http"
-	"power-ci/models/gitlab"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -30,16 +30,21 @@ var gitlabInitCmd = &cobra.Command{
 		client := &http.Client{}
 		gitlabClient := &GitlabClient{
 			Client: *client,
+			Host:   strings.TrimRight(Host, "/"),
 		}
 
-		request := &gitlab.OauthRequest{
-			GrantType: "password",
-			Username:  User,
-			Password:  Password,
+		response := gitlabClient.GrantOauthToken(User, Password)
+		gitlabClient.AccessToken = response.AccessToken
+
+		devopsUserId := 0
+		users := gitlabClient.GetUserByUsername("devops_user")
+		if len(users) >= 1 {
+			devopsUserId = users[0].Id
+		} else {
+			devopsUser := gitlabClient.CreateUser(true, "devops_user", "Devops_User", "devops@example.com", "12345678")
+			devopsUserId = devopsUser.Id
 		}
 
-		response := gitlabClient.GrantOauthToken("POST", Host, *request)
-
-		fmt.Println(response.AccessToken)
+		fmt.Println(devopsUserId)
 	},
 }
