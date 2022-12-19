@@ -3,6 +3,9 @@ package gitlab
 import (
 	"fmt"
 	"net/http"
+	"power-ci/consts"
+	"power-ci/utils"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -28,6 +31,8 @@ var gitlabInitCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Init gitlab",
 	Run: func(cmd *cobra.Command, args []string) {
+		configs := utils.GetGitlabConfigs()
+
 		client := &http.Client{}
 		gitlabClient := &GitlabClient{
 			Client: *client,
@@ -45,11 +50,17 @@ var gitlabInitCmd = &cobra.Command{
 			password := uuid.New()
 			devopsUser := gitlabClient.CreateUser(true, "devops_user", "Devops_User", "devops@example.com", password.String())
 			devopsUserId = devopsUser.Id
+			configs[consts.GitLabPasswordKey] = password.String()
 		}
 
-		fmt.Println(devopsUserId)
-
 		var privateToken = gitlabClient.CreatePersonalAccessToken(devopsUserId, "devops_token", []string{"api"}, "2099-12-31")
-		fmt.Println(privateToken)
+
+		configs[consts.GitLabUserIdKey] = strconv.Itoa(devopsUserId)
+		configs[consts.GitLabUserNameKey] = "devops_user"
+		configs[consts.GitLabPrivateTokenKey] = privateToken.Token
+
+		path := utils.SaveGitlabConfigs(configs)
+
+		fmt.Printf("Init success. Information is saved to [%s]\n", path)
 	},
 }

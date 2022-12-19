@@ -19,10 +19,6 @@ var configGetCmd = &cobra.Command{
 	Short: "get config",
 	Run: func(cmd *cobra.Command, args []string) {
 		configs := utils.GetConfigs()
-		if configs == nil {
-			configs = make(map[string]string)
-		}
-
 		value, ok := configs[GetKey]
 		if ok {
 			fmt.Printf("The value of key [%s] is %s\n", GetKey, value)

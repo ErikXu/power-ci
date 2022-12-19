@@ -22,12 +22,9 @@ var configSetCmd = &cobra.Command{
 	Short: "set config",
 	Run: func(cmd *cobra.Command, args []string) {
 		configs := utils.GetConfigs()
-		if configs == nil {
-			configs = make(map[string]string)
-		}
 		configs[SetKey] = SetValue
 		path := utils.SaveConfigs(configs)
 
-		fmt.Printf("Config set and saved to [%s]\n", path)
+		fmt.Printf("Config is set and saved to [%s]\n", path)
 	},
 }

@@ -10,6 +10,15 @@ import (
 )
 
 var configName = "power-ci.json"
+var gitlabConfigName = "gitlab.json"
+
+func GetGitlabConfigs() map[string]string {
+	return getConfigs(gitlabConfigName)
+}
+
+func SaveGitlabConfigs(configs map[string]string) string {
+	return setConfigs(gitlabConfigName, configs)
+}
 
 func GetConfigs() map[string]string {
 	return getConfigs(configName)
@@ -22,7 +31,7 @@ func SaveConfigs(configs map[string]string) string {
 func getConfigs(filename string) map[string]string {
 	bytes := readConfig(filename)
 	if bytes == nil {
-		return nil
+		return make(map[string]string)
 	}
 
 	result := make(map[string]string)
