@@ -3,18 +3,14 @@ package docker
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"os"
-	"os/exec"
-	"path"
-	"power-ci/consts"
+	"power-ci/utils"
 	"strings"
 
-	"github.com/creack/pty"
 	"github.com/spf13/cobra"
 )
 
-var script_centos = `#!/bin/bash
+var scriptCentos = `#!/bin/bash
 yum remove docker \
                   docker-client \
                   docker-client-latest \
@@ -38,7 +34,7 @@ systemctl enable docker
 
 docker info`
 
-var script_debian = `#!/bin/bash
+var scriptDebian = `#!/bin/bash
 apt-get remove -y docker docker-engine docker.io containerd runc
 
 apt-get update -y
@@ -66,7 +62,7 @@ service docker enable
 
 docker info`
 
-var script_fedora = `#!/bin/bash
+var scriptFedora = `#!/bin/bash
 dnf remove -y docker \
                   docker-client \
                   docker-client-latest \
@@ -92,7 +88,7 @@ systemctl enable docker
 
 docker info`
 
-var script_opensuse_leap = `#!/bin/bash
+var scriptOpensuseLeap = `#!/bin/bash
 zypper refresh
 
 zypper update -y
@@ -105,7 +101,7 @@ systemctl enable docker
 
 docker info`
 
-var script_ubuntu = `#!/bin/bash
+var scriptUbuntu = `#!/bin/bash
 apt-get update -y
 
 apt-get install -y \
@@ -131,47 +127,48 @@ service docker enable
 
 docker info`
 
+func getOsVersion() string {
+	osVersion := "Unknown"
+	file, err := os.Open("/etc/os-release")
+	if err != nil {
+		fmt.Println("Cannot get OS version")
+		return osVersion
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "ID=") {
+			temp := strings.Replace(line, "ID=", "", -1)
+			osVersion = strings.Replace(temp, "\"", "", -1)
+			break
+		}
+	}
+
+	return osVersion
+}
+
 var dockerInstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install docker",
 	Run: func(cmd *cobra.Command, args []string) {
-		file, err := os.Open("/etc/os-release")
-		if err != nil {
-			fmt.Println("Cannot get OS version")
-			return
-		}
-		defer file.Close()
+		osVersion := getOsVersion()
 
-		scanner := bufio.NewScanner(file)
-
-		osVersion := "Unknown"
-
-		for scanner.Scan() {
-			line := scanner.Text()
-			if strings.HasPrefix(line, "ID=") {
-				temp := strings.Replace(line, "ID=", "", -1)
-				osVersion = strings.Replace(temp, "\"", "", -1)
-				break
-			}
-		}
-
-		homeDir, _ := os.UserHomeDir()
-		os.MkdirAll(path.Join(homeDir, consts.Workspace), os.ModePerm)
-
-		filepath := path.Join(homeDir, consts.Workspace, "install-docker.sh")
-		f, _ := os.Create(filepath)
-
+		filepath := ""
+		filename := "install-docker.sh"
 		switch osVersion {
 		case "centos", "rocky":
-			f.WriteString(script_centos)
+			filepath = utils.WriteScript(filename, scriptCentos)
 		case "debian":
-			f.WriteString(script_debian)
+			filepath = utils.WriteScript(filename, scriptDebian)
 		case "fedora":
-			f.WriteString(script_fedora)
+			filepath = utils.WriteScript(filename, scriptFedora)
 		case "opensuse-leap":
-			f.WriteString(script_opensuse_leap)
+			filepath = utils.WriteScript(filename, scriptOpensuseLeap)
 		case "ubuntu":
-			f.WriteString(script_ubuntu)
+			filepath = utils.WriteScript(filename, scriptUbuntu)
 		default:
 			fmt.Printf("Unsupported OS version: %s\n", osVersion)
 			return
@@ -179,14 +176,8 @@ var dockerInstallCmd = &cobra.Command{
 
 		fmt.Printf("OS version: %s\n", osVersion)
 
-		command := exec.Command("bash", filepath)
-		f, err = pty.Start(command)
-		if err != nil {
-			fmt.Println("Install failed")
-			return
-		}
-		io.Copy(os.Stdout, f)
+		utils.ExecuteScript(filepath)
 
-		fmt.Println("Install success, more info please refer https://docs.docker.com/engine/install/")
+		fmt.Println("Install success. More info please refer https://docs.docker.com/engine/install/")
 	},
 }

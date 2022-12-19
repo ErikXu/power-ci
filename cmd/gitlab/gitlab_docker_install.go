@@ -2,14 +2,9 @@ package gitlab
 
 import (
 	"fmt"
-	"io"
-	"os"
-	"os/exec"
-	"path"
-	"power-ci/consts"
+	"power-ci/utils"
 	"strings"
 
-	"github.com/creack/pty"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +25,7 @@ func init() {
 
 var Hostname string
 
-var docker_install_template = `#!/bin/bash
+var dockerInstallTemplate = `#!/bin/bash
 mkdir -p /etc/gitlab
 mkdir -p /var/log/gitlab
 mkdir -p /var/opt/gitlab
@@ -52,24 +47,9 @@ var gitlabDockerInstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install gitlab using docker",
 	Run: func(cmd *cobra.Command, args []string) {
-		script := strings.Replace(docker_install_template, "{HOSTNAME}", Hostname, -1)
-
-		homeDir, _ := os.UserHomeDir()
-		os.MkdirAll(path.Join(homeDir, consts.Workspace), os.ModePerm)
-
-		filepath := path.Join(homeDir, consts.Workspace, "install-gitlab-docker.sh")
-		f, _ := os.Create(filepath)
-
-		f.WriteString(script)
-
-		command := exec.Command("bash", filepath)
-		f, err := pty.Start(command)
-		if err != nil {
-			fmt.Println("Install failed")
-			return
-		}
-		io.Copy(os.Stdout, f)
-
-		fmt.Println("Install success, more info please refer https://docs.gitlab.com/ee/install/docker.html")
+		script := strings.Replace(dockerInstallTemplate, "{HOSTNAME}", Hostname, -1)
+		filepath := utils.WriteScript("install-gitlab-docker.sh", script)
+		utils.ExecuteScript(filepath)
+		fmt.Println("Install success. More info please refer https://docs.gitlab.com/ee/install/docker.html")
 	},
 }

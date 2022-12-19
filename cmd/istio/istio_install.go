@@ -2,14 +2,12 @@ package istio
 
 import (
 	"fmt"
-	"io"
 	"os"
-	"os/exec"
 	"path"
 	"power-ci/consts"
+	"power-ci/utils"
 	"strings"
 
-	"github.com/creack/pty"
 	"github.com/spf13/cobra"
 )
 
@@ -230,6 +228,14 @@ spec:
             port:
               number: 16686`
 
+func writeYaml(istioWorkspace string, template string, domain string, filename string) string {
+	yaml := strings.Replace(template, "{DOMAIN}", domain, -1)
+	yamlPath := path.Join(istioWorkspace, filename)
+	f, _ := os.Create(yamlPath)
+	f.WriteString(yaml)
+	return yamlPath
+}
+
 var istioInstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install istio",
@@ -240,43 +246,14 @@ var istioInstallCmd = &cobra.Command{
 		istioWorkspace := path.Join(homeDir, consts.Workspace, "istio")
 		os.MkdirAll(istioWorkspace, os.ModePerm)
 
-		istioYamlPath := path.Join(istioWorkspace, "istio.yaml")
-		f, _ := os.Create(istioYamlPath)
-		f.WriteString(istioYaml)
-
-		istioGatewayYaml := strings.Replace(istioGatewayTemplate, "{DOMAIN}", Domain, -1)
-		istioGatewayYamlPath := path.Join(istioWorkspace, "istio-gateway.yaml")
-		f, _ = os.Create(istioGatewayYamlPath)
-		f.WriteString(istioGatewayYaml)
-
-		bookinfoVsYaml := strings.Replace(bookinfoVsTemplate, "{DOMAIN}", Domain, -1)
-		bookinfoVsYamlPath := path.Join(istioWorkspace, "bookinfo-vs.yaml")
-		f, _ = os.Create(bookinfoVsYamlPath)
-		f.WriteString(bookinfoVsYaml)
-
-		prometheusVsYaml := strings.Replace(prometheusVsTemplate, "{DOMAIN}", Domain, -1)
-		prometheusVsYamlPath := path.Join(istioWorkspace, "prometheus-vs.yaml")
-		f, _ = os.Create(prometheusVsYamlPath)
-		f.WriteString(prometheusVsYaml)
-
-		grafanaVsYaml := strings.Replace(grafanaVsTemplate, "{DOMAIN}", Domain, -1)
-		grafanaVsYamlPath := path.Join(istioWorkspace, "grafana-vs.yaml")
-		f, _ = os.Create(grafanaVsYamlPath)
-		f.WriteString(grafanaVsYaml)
-
-		kialiVsYaml := strings.Replace(kialiVsTemplate, "{DOMAIN}", Domain, -1)
-		kialiVsYamlPath := path.Join(istioWorkspace, "kiali-vs.yaml")
-		f, _ = os.Create(kialiVsYamlPath)
-		f.WriteString(kialiVsYaml)
-
-		jaegerQuerySvcYamlPath := path.Join(istioWorkspace, "jaeger-query.yaml")
-		f, _ = os.Create(jaegerQuerySvcYamlPath)
-		f.WriteString(jaegeQuerySvcYaml)
-
-		jaegerVsYaml := strings.Replace(jaegerVsTemplate, "{DOMAIN}", Domain, -1)
-		jaegerVsYamlPath := path.Join(istioWorkspace, "jaeger-vs.yaml")
-		f, _ = os.Create(jaegerVsYamlPath)
-		f.WriteString(jaegerVsYaml)
+		istioYamlPath := writeYaml(istioWorkspace, istioYaml, Domain, "istio.yaml")
+		istioGatewayYamlPath := writeYaml(istioWorkspace, istioGatewayTemplate, Domain, "istio-gateway.yaml")
+		bookinfoVsYamlPath := writeYaml(istioWorkspace, bookinfoVsTemplate, Domain, "bookinfo-vs.yaml")
+		prometheusVsYamlPath := writeYaml(istioWorkspace, prometheusVsTemplate, Domain, "prometheus-vs.yaml")
+		grafanaVsYamlPath := writeYaml(istioWorkspace, grafanaVsTemplate, Domain, "grafana-vs.yaml")
+		kialiVsYamlPath := writeYaml(istioWorkspace, kialiVsTemplate, Domain, "kiali-vs.yaml")
+		jaegerQuerySvcYamlPath := writeYaml(istioWorkspace, jaegeQuerySvcYaml, Domain, "jaeger-query.yaml")
+		jaegerVsYamlPath := writeYaml(istioWorkspace, jaegerVsTemplate, Domain, "jaeger-vs.yaml")
 
 		script := strings.Replace(template, "{ISTIO.YAML}", istioYamlPath, -1)
 		script = strings.Replace(script, "{ISTIO-GATEWAY.YAML}", istioGatewayYamlPath, -1)
@@ -287,18 +264,9 @@ var istioInstallCmd = &cobra.Command{
 		script = strings.Replace(script, "{JAEGER-QUERY.YAML}", jaegerQuerySvcYamlPath, -1)
 		script = strings.Replace(script, "{JAEGER-VS.YAML}", jaegerVsYamlPath, -1)
 
-		filepath := path.Join(homeDir, consts.Workspace, "install-istio.sh")
-		f, _ = os.Create(filepath)
-		f.WriteString(script)
+		filepath := utils.WriteScript("install-istio.sh", script)
+		utils.ExecuteScript(filepath)
 
-		command := exec.Command("bash", filepath)
-		f, err := pty.Start(command)
-		if err != nil {
-			fmt.Println("Install failed")
-			return
-		}
-		io.Copy(os.Stdout, f)
-
-		fmt.Println("Install success, more info please refer https://istio.io/latest/docs/setup/getting-started/")
+		fmt.Println("Install success. More info please refer https://istio.io/latest/docs/setup/getting-started/")
 	},
 }

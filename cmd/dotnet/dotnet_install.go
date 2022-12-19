@@ -1,13 +1,9 @@
 package dotnet
 
 import (
-	"io"
-	"os"
-	"os/exec"
-	"path"
-	"power-ci/consts"
+	"fmt"
+	"power-ci/utils"
 
-	"github.com/creack/pty"
 	"github.com/spf13/cobra"
 )
 
@@ -24,19 +20,8 @@ var dotnetInstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install .Net",
 	Run: func(cmd *cobra.Command, args []string) {
-		homeDir, _ := os.UserHomeDir()
-		os.MkdirAll(path.Join(homeDir, consts.Workspace), os.ModePerm)
-
-		filepath := path.Join(homeDir, consts.Workspace, "install-dotnet.sh")
-		f, _ := os.Create(filepath)
-
-		f.WriteString(script)
-
-		command := exec.Command("bash", filepath)
-		f, err := pty.Start(command)
-		if err != nil {
-			panic(err)
-		}
-		io.Copy(os.Stdout, f)
+		filepath := utils.WriteScript("install-dotnet.sh", script)
+		utils.ExecuteScript(filepath)
+		fmt.Println("Install success")
 	},
 }

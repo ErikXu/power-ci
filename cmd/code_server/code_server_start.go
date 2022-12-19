@@ -1,13 +1,9 @@
 package code_server
 
 import (
-	"io"
-	"os"
-	"os/exec"
-	"path"
-	"power-ci/consts"
+	"fmt"
+	"power-ci/utils"
 
-	"github.com/creack/pty"
 	"github.com/spf13/cobra"
 )
 
@@ -29,19 +25,8 @@ var codeServerStartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start code server",
 	Run: func(cmd *cobra.Command, args []string) {
-		homeDir, _ := os.UserHomeDir()
-		os.MkdirAll(path.Join(homeDir, consts.Workspace), os.ModePerm)
-
-		filepath := path.Join(homeDir, consts.Workspace, "start-code-server.sh")
-		f, _ := os.Create(filepath)
-
-		f.WriteString(startScript)
-
-		command := exec.Command("bash", filepath)
-		f, err := pty.Start(command)
-		if err != nil {
-			panic(err)
-		}
-		io.Copy(os.Stdout, f)
+		filepath := utils.WriteScript("start-code-server.sh", startScript)
+		utils.ExecuteScript(filepath)
+		fmt.Println("Start success")
 	},
 }

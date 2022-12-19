@@ -2,14 +2,9 @@ package gitlab
 
 import (
 	"fmt"
-	"io"
-	"os"
-	"os/exec"
-	"path"
-	"power-ci/consts"
+	"power-ci/utils"
 	"strings"
 
-	"github.com/creack/pty"
 	"github.com/spf13/cobra"
 )
 
@@ -36,23 +31,8 @@ var gitlabInstallCmd = &cobra.Command{
 	Short: "Install gitlab",
 	Run: func(cmd *cobra.Command, args []string) {
 		script := strings.Replace(template, "{EXTERNAL_URL}", Url, -1)
-
-		homeDir, _ := os.UserHomeDir()
-		os.MkdirAll(path.Join(homeDir, consts.Workspace), os.ModePerm)
-
-		filepath := path.Join(homeDir, consts.Workspace, "install-gitlab.sh")
-		f, _ := os.Create(filepath)
-
-		f.WriteString(script)
-
-		command := exec.Command("bash", filepath)
-		f, err := pty.Start(command)
-		if err != nil {
-			fmt.Println("Install failed")
-			return
-		}
-		io.Copy(os.Stdout, f)
-
-		fmt.Println("Install success, more info please refer https://about.gitlab.com/install/#centos-7")
+		filepath := utils.WriteScript("install-gitlab.sh", script)
+		utils.ExecuteScript(filepath)
+		fmt.Println("Install success. More info please refer https://about.gitlab.com/install/#centos-7")
 	},
 }

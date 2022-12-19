@@ -2,13 +2,8 @@ package jenkins
 
 import (
 	"fmt"
-	"io"
-	"os"
-	"os/exec"
-	"path"
-	"power-ci/consts"
+	"power-ci/utils"
 
-	"github.com/creack/pty"
 	"github.com/spf13/cobra"
 )
 
@@ -40,22 +35,8 @@ var JenkinsInstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install jenkins",
 	Run: func(cmd *cobra.Command, args []string) {
-		homeDir, _ := os.UserHomeDir()
-		os.MkdirAll(path.Join(homeDir, consts.Workspace), os.ModePerm)
-
-		filepath := path.Join(homeDir, consts.Workspace, "install-jenkins.sh")
-		f, _ := os.Create(filepath)
-
-		f.WriteString(installScript)
-
-		command := exec.Command("bash", filepath)
-		f, err := pty.Start(command)
-		if err != nil {
-			fmt.Println("Install failed")
-			return
-		}
-		io.Copy(os.Stdout, f)
-
-		fmt.Println("Install success, more info please refer https://www.jenkins.io/doc/book/installing/linux/#red-hat-centos")
+		filepath := utils.WriteScript("install-jenkins.sh", installScript)
+		utils.ExecuteScript(filepath)
+		fmt.Println("Install success. More info please refer https://www.jenkins.io/doc/book/installing/linux/#red-hat-centos")
 	},
 }

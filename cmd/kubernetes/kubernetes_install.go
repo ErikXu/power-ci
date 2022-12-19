@@ -2,14 +2,9 @@ package kubernetes
 
 import (
 	"fmt"
-	"io"
-	"os"
-	"os/exec"
-	"path"
-	"power-ci/consts"
+	"power-ci/utils"
 	"strings"
 
-	"github.com/creack/pty"
 	"github.com/spf13/cobra"
 )
 
@@ -45,22 +40,8 @@ var kubernetesInstallCmd = &cobra.Command{
 		script = strings.Replace(script, "{NODES}", Nodes, -1)
 		script = strings.Replace(script, "{PASSWORD}", Password, -1)
 
-		homeDir, _ := os.UserHomeDir()
-		os.MkdirAll(path.Join(homeDir, consts.Workspace), os.ModePerm)
-
-		filepath := path.Join(homeDir, consts.Workspace, "install-kubernetes.sh")
-		f, _ := os.Create(filepath)
-
-		f.WriteString(script)
-
-		command := exec.Command("bash", filepath)
-		f, err := pty.Start(command)
-		if err != nil {
-			fmt.Println("Install failed")
-			return
-		}
-		io.Copy(os.Stdout, f)
-
-		fmt.Println("Install success, more info please refer https://www.sealos.io/docs/getting-started/installation")
+		filepath := utils.WriteScript("install-kubernetes.sh", script)
+		utils.ExecuteScript(filepath)
+		fmt.Println("Install success. More info please refer https://www.sealos.io/docs/getting-started/installation")
 	},
 }
