@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"power-ci/utils"
 
 	"github.com/spf13/cobra"
@@ -25,6 +26,8 @@ var configSetCmd = &cobra.Command{
 			configs = make(map[string]string)
 		}
 		configs[SetKey] = SetValue
-		utils.SaveConfigs(configs)
+		path := utils.SaveConfigs(configs)
+
+		fmt.Printf("Config set and saved to [%s]\n", path)
 	},
 }

@@ -15,8 +15,8 @@ func GetConfigs() map[string]string {
 	return getConfigs(configName)
 }
 
-func SaveConfigs(configs map[string]string) {
-	setConfigs(configName, configs)
+func SaveConfigs(configs map[string]string) string {
+	return setConfigs(configName, configs)
 }
 
 func getConfigs(filename string) map[string]string {
@@ -30,9 +30,9 @@ func getConfigs(filename string) map[string]string {
 	return result
 }
 
-func setConfigs(filename string, configs map[string]string) {
+func setConfigs(filename string, configs map[string]string) string {
 	bytes, _ := json.MarshalIndent(configs, "", "    ")
-	saveConfig(filename, bytes)
+	return saveConfig(filename, bytes)
 }
 
 func readConfig(filename string) []byte {
@@ -50,11 +50,13 @@ func readConfig(filename string) []byte {
 	return bytes
 }
 
-func saveConfig(filename string, bytes []byte) {
+func saveConfig(filename string, bytes []byte) string {
 	homeDir, _ := os.UserHomeDir()
 	os.MkdirAll(path.Join(homeDir, consts.Workspace), os.ModePerm)
 
 	filepath := path.Join(homeDir, consts.Workspace, filename)
 	f, _ := os.Create(filepath)
 	f.Write(bytes)
+
+	return filepath
 }
