@@ -1,0 +1,30 @@
+package config
+
+import (
+	"power-ci/utils"
+
+	"github.com/spf13/cobra"
+)
+
+func init() {
+	configSetCmd.Flags().StringVarP(&SetKey, "key", "k", "", "key")
+	configSetCmd.MarkFlagRequired("key")
+	configSetCmd.Flags().StringVarP(&SetValue, "value", "v", "", "value")
+	configSetCmd.MarkFlagRequired("value")
+}
+
+var SetKey string
+var SetValue string
+
+var configSetCmd = &cobra.Command{
+	Use:   "set",
+	Short: "set config",
+	Run: func(cmd *cobra.Command, args []string) {
+		configs := utils.GetConfigs()
+		if configs == nil {
+			configs = make(map[string]string)
+		}
+		configs[SetKey] = SetValue
+		utils.SaveConfigs(configs)
+	},
+}

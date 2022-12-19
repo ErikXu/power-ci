@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"power-ci/cmd/code_server"
+	"power-ci/cmd/config"
 	"power-ci/cmd/docker"
 	"power-ci/cmd/dotnet"
 	"power-ci/cmd/gitlab"
@@ -27,6 +28,7 @@ func init() {
 	rootCmd.AddCommand(kubernetes.KubernetesCmd)
 	rootCmd.AddCommand(istio.IstioCmd)
 	rootCmd.AddCommand(dotnet.DotnetCmd)
+	rootCmd.AddCommand(config.ConfigCmd)
 }
 
 var rootCmd = &cobra.Command{
