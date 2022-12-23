@@ -55,6 +55,7 @@ var gitlabInitCmd = &cobra.Command{
 
 		var privateToken = gitlabClient.CreatePersonalAccessToken(devopsUserId, "devops_token", []string{"api"}, "2099-12-31")
 
+		configs[consts.GitLabHostKey] = Host
 		configs[consts.GitLabUserIdKey] = strconv.Itoa(devopsUserId)
 		configs[consts.GitLabUserNameKey] = "devops_user"
 		configs[consts.GitLabPrivateTokenKey] = privateToken.Token
