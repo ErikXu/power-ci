@@ -12,6 +12,7 @@ func init() {
 	GitlabCmd.AddCommand(gitlabPasswordCmd)
 	GitlabCmd.AddCommand(gitlabInitCmd)
 	GitlabCmd.AddCommand(gitlabDockerCmd)
+	GitlabCmd.AddCommand(gitlabRepoCmd)
 }
 
 var GitlabCmd = &cobra.Command{

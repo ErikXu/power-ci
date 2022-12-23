@@ -12,7 +12,7 @@ var gitlabDockerCmd = &cobra.Command{
 	Use:   "docker",
 	Short: "Install gitlab using docker",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Use --help to get the command detils.")
+		fmt.Println("Use --help to get the command detils")
 	},
 }
 
