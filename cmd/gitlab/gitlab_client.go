@@ -69,6 +69,21 @@ func (client *GitlabClient) CreateProject(name string, namespaceId int) gitlab.C
 	return call[gitlab.CreateProjectRequest, gitlab.CreateProjectResponse](client, "POST", "/api/v4/projects", request)
 }
 
+func (client *GitlabClient) CreateCommit(projectId int, branch string, action string, filePath string, content string, message string) gitlab.CreateCommitResponse {
+	request := &gitlab.CreateCommitRequest{
+		Branch:        branch,
+		CommitMessage: message,
+		Actions: []gitlab.CommitAction{
+			{
+				Action:   action,
+				FilePath: filePath,
+				Content:  content,
+			},
+		},
+	}
+	return call[gitlab.CreateCommitRequest, gitlab.CreateCommitResponse](client, "POST", fmt.Sprintf("/api/v4/projects/%d/repository/commits", projectId), request)
+}
+
 func callToBytes[Request gitlab.GitlabRequest](client *GitlabClient, method string, api string, request *Request) []byte {
 	url := client.Host + api
 

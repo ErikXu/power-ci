@@ -61,7 +61,9 @@ var gitlabRepoAddCmd = &cobra.Command{
 			}
 		}
 
-		response := gitlabClient.CreateProject(RepoName, namespaceId)
-		fmt.Println(response)
+		project := gitlabClient.CreateProject(RepoName, namespaceId)
+
+		commit := gitlabClient.CreateCommit(project.Id, "main", "create", "README.md", "# Try add readme", "Try Add readme.")
+		fmt.Println(commit)
 	},
 }
