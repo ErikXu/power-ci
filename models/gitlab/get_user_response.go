@@ -1,6 +1,6 @@
 package gitlab
 
-type GetUserResponse struct {
+type GetUserItem struct {
 	Id        int    `json:"id"`
 	Username  string `json:"username"`
 	Name      string `json:"name"`
@@ -8,3 +8,5 @@ type GetUserResponse struct {
 	AvatarURL string `json:"avatar_url"`
 	WebURL    string `json:"web_url"`
 }
+
+type GetUserResponse = []GetUserItem

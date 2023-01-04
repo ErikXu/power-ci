@@ -48,7 +48,7 @@ var gitlabInitCmd = &cobra.Command{
 			devopsUserId = users[0].Id
 		} else {
 			password := uuid.New()
-			devopsUser := gitlabClient.CreateUser(true, "devops_user", "Devops_User", "devops@example.com", password.String())
+			devopsUser := gitlabClient.CreateUser(true, consts.GitLabDefaultUser, "Devops_User", "devops@example.com", password.String(), true)
 			devopsUserId = devopsUser.Id
 			configs[consts.GitLabPasswordKey] = password.String()
 		}
@@ -57,11 +57,11 @@ var gitlabInitCmd = &cobra.Command{
 
 		configs[consts.GitLabHostKey] = Host
 		configs[consts.GitLabUserIdKey] = strconv.Itoa(devopsUserId)
-		configs[consts.GitLabUserNameKey] = "devops_user"
+		configs[consts.GitLabUserNameKey] = consts.GitLabDefaultUser
 		configs[consts.GitLabPrivateTokenKey] = privateToken.Token
 
 		path := utils.SaveGitlabConfigs(configs)
 
-		fmt.Printf("Init success. Information is saved to [%s]\n", path)
+		fmt.Printf("Init success. Information was saved to [%s]\n", path)
 	},
 }

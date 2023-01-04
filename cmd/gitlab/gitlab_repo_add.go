@@ -2,6 +2,10 @@ package gitlab
 
 import (
 	"fmt"
+	"net/http"
+	"power-ci/consts"
+	"power-ci/utils"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -17,7 +21,7 @@ var gitlabRepoCmd = &cobra.Command{
 func init() {
 	gitlabRepoCmd.AddCommand(gitlabRepoAddCmd)
 
-	gitlabRepoAddCmd.Flags().StringVarP(&RepoNamespace, "group", "g", "", "Repo group name")
+	gitlabRepoAddCmd.Flags().StringVarP(&RepoGroup, "group", "g", "", "Repo group name")
 
 	gitlabRepoAddCmd.Flags().StringVarP(&RepoName, "name", "n", "", "Repo name")
 	gitlabRepoAddCmd.MarkFlagRequired("name")
@@ -28,7 +32,7 @@ func init() {
 	gitlabRepoAddCmd.Flags().StringVarP(&RepoOwner, "owner", "o", "", "Repo owner")
 }
 
-var RepoNamespace string
+var RepoGroup string
 var RepoName string
 var RepoType string
 var RepoOwner string
@@ -37,6 +41,27 @@ var gitlabRepoAddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add gitlab repo",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Add gitlab repo")
+		configs := utils.GetGitlabConfigs()
+
+		client := &http.Client{}
+		gitlabClient := &GitlabClient{
+			Client:       *client,
+			Host:         strings.TrimRight(configs[consts.GitLabHostKey], "/"),
+			PrivateToken: configs[consts.GitLabPrivateTokenKey],
+		}
+
+		namespaces := gitlabClient.GetNamespaces()
+
+		namespaceId := 0
+		if RepoGroup == "" {
+			for _, namespace := range namespaces {
+				if namespace.Kind == "user" && namespace.FullPath == consts.GitLabDefaultUser {
+					namespaceId = namespace.Id
+				}
+			}
+		}
+
+		response := gitlabClient.CreateProject(RepoName, namespaceId)
+		fmt.Println(response)
 	},
 }
